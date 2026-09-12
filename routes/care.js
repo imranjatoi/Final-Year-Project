@@ -1,0 +1,10 @@
+const express = require('express');
+const router  = express.Router();
+const ctrl    = require('../controllers/careController');
+const { isLoggedIn } = require('../middleware/auth');
+const upload  = require('../middleware/upload');
+router.get('/', isLoggedIn, ctrl.getDashboard);
+router.post('/add', isLoggedIn, upload.single('image'), ctrl.addEntry);
+router.post('/:id/watered', isLoggedIn, ctrl.markWatered);
+router.post('/:id/delete', isLoggedIn, ctrl.deleteEntry);
+module.exports = router;

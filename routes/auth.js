@@ -1,0 +1,13 @@
+const express  = require('express');
+const router   = express.Router();
+const ctrl     = require('../controllers/authController');
+const { isLoggedIn, isNotLoggedIn } = require('../middleware/auth');
+const upload   = require('../middleware/upload');
+router.get('/register', isNotLoggedIn, ctrl.getRegister);
+router.post('/register', isNotLoggedIn, ctrl.postRegister);
+router.get('/login', isNotLoggedIn, ctrl.getLogin);
+router.post('/login', isNotLoggedIn, ctrl.postLogin);
+router.get('/logout', ctrl.logout);
+router.get('/profile', isLoggedIn, ctrl.getProfile);
+router.post('/profile', isLoggedIn, upload.single('avatar'), ctrl.postUpdateProfile);
+module.exports = router;

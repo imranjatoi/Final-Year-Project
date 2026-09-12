@@ -1,0 +1,205 @@
+<%- include('partials/header') %>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-7 hero-content">
+        <div class="hero-badge fade-in-up"><i class="fas fa-shield-alt me-1"></i> Pakistan's #1 Verified Plant Marketplace</div>
+        <h1 class="mb-3 fade-in-up fade-in-up-1">Find Your Perfect Plant from <span style="color:#A5D6A7">Verified</span> Sellers</h1>
+        <p class="mb-4 fade-in-up fade-in-up-2">Buy plants with confidence. Every seller is verified, delivery is local, and we help you keep your plants healthy after purchase.</p>
+        <!-- Search bar -->
+        <div class="search-wrap mb-4 fade-in-up fade-in-up-2" style="max-width:560px">
+          <i class="fas fa-search" style="color:#aaa"></i>
+          <form action="/plants" method="GET" class="d-flex align-items-center w-100 gap-2">
+            <input type="text" name="search" placeholder="Search plants e.g. Monstera, Rose..." class="flex-1"/>
+            <select name="city" class="auto-submit">
+              <option value="">All Cities</option>
+              <option>Lahore</option><option>Karachi</option><option>Islamabad</option>
+              <option>Rawalpindi</option><option>Faisalabad</option><option>Multan</option>
+            </select>
+            <button type="submit" class="btn-search">Search</button>
+          </form>
+        </div>
+        <div class="d-flex gap-3 flex-wrap fade-in-up fade-in-up-3">
+          <a href="/plants" class="btn-primary btn">Browse All Plants</a>
+          <a href="/auth/register?role=seller" class="btn btn-outline-light" style="border-radius:25px;font-weight:600">Sell Your Plants</a>
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-flex justify-content-end">
+        <img src="/images/plants/hero-plant.jpg" alt="Beautiful plants" style="max-width:420px;width:100%;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.3);transform:rotate(2deg)"/>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── STATS ── -->
+<section class="py-4 bg-white">
+  <div class="container">
+    <div class="stats-bar">
+      <div class="row g-3">
+        <div class="col-6 col-md-3 stat-item">
+          <span class="stat-number"><%= (stats.plants ? stats.plants.toLocaleString() : '500+') %></span>
+          <span class="stat-label"><i class="fas fa-leaf me-1"></i>Plants Listed</span>
+        </div>
+        <div class="col-6 col-md-3 stat-item">
+          <span class="stat-number"><%= (stats.sellers ? stats.sellers.toLocaleString() : '80+') %></span>
+          <span class="stat-label"><i class="fas fa-store me-1"></i>Verified Sellers</span>
+        </div>
+        <div class="col-6 col-md-3 stat-item">
+          <span class="stat-number"><%= (stats.buyers ? stats.buyers.toLocaleString() : '1200+') %></span>
+          <span class="stat-label"><i class="fas fa-users me-1"></i>Happy Buyers</span>
+        </div>
+        <div class="col-6 col-md-3 stat-item">
+          <span class="stat-number"><%= (stats.reviews ? stats.reviews.toLocaleString() : '950+') %></span>
+          <span class="stat-label"><i class="fas fa-star me-1"></i>Reviews</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CATEGORIES ── -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h2 class="section-title">Shop by Category</h2>
+      <div class="section-divider mx-auto"></div>
+    </div>
+    <div class="row g-3">
+      <% const cats = [
+        {slug:'indoor',    icon:'🌿', label:'Indoor'},
+        {slug:'outdoor',   icon:'🌳', label:'Outdoor'},
+        {slug:'succulents',icon:'🌵', label:'Succulents'},
+        {slug:'flowering', icon:'🌸', label:'Flowering'},
+        {slug:'herbs',     icon:'🌱', label:'Herbs'},
+        {slug:'trees',     icon:'🎄', label:'Trees'},
+        {slug:'aquatic',   icon:'💧', label:'Aquatic'},
+        {slug:'other',     icon:'🍀', label:'Other'},
+      ]; %>
+      <% cats.forEach(cat => { %>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-3">
+        <a href="/plants?category=<%= cat.slug %>" class="category-pill">
+          <span class="cat-icon"><%= cat.icon %></span>
+          <%= cat.label %>
+        </a>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURED PLANTS ── -->
+<section class="py-5 bg-green-light">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="section-title mb-1">Featured Plants</h2>
+        <div class="section-divider"></div>
+      </div>
+      <a href="/plants" class="btn-outline-primary btn">View All <i class="fas fa-arrow-right ms-1"></i></a>
+    </div>
+    <% if (featured.length === 0) { %>
+    <div class="empty-state"><div class="empty-icon">🌱</div><p>No plants listed yet. Be the first seller!</p></div>
+    <% } else { %>
+    <div class="row g-4">
+      <% featured.forEach(plant => { %>
+      <div class="col-sm-6 col-md-4 col-lg-3 fade-in-up">
+        <div class="plant-card">
+          <a href="/plants/<%= plant._id %>">
+            <img src="<%= plant.images[0] || '/images/plants/default-plant.jpg' %>" alt="<%= plant.title %>" loading="lazy"/>
+          </a>
+          <div class="plant-card-body">
+            <div class="d-flex justify-content-between align-items-start mb-1">
+              <span class="badge-category"><%= plant.category %></span>
+              <% if (plant.seller.isVerified) { %><span class="badge-verified"><i class="fas fa-check-circle"></i> Verified</span><% } %>
+            </div>
+            <h6 class="plant-card-title mt-2"><a href="/plants/<%= plant._id %>" style="color:inherit;text-decoration:none"><%= plant.title %></a></h6>
+            <div class="plant-card-seller mb-2"><i class="fas fa-map-marker-alt me-1"></i><%= plant.seller.city || 'Pakistan' %></div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="plant-card-price">Rs. <%= plant.price.toLocaleString() %></span>
+              <a href="/plants/<%= plant._id %>" class="btn-sm-green">View</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="section-title">How Baghban Works</h2>
+      <div class="section-divider mx-auto"></div>
+      <p class="section-subtitle">Simple, safe, and satisfying plant shopping</p>
+    </div>
+    <div class="row g-4 text-center">
+      <% const steps = [
+        {icon:'fa-search',      color:'#2E7D32', num:'01', title:'Browse & Discover',  desc:'Search thousands of plants from verified sellers near you.'},
+        {icon:'fa-shield-alt',  color:'#388E3C', num:'02', title:'Buy with Confidence', desc:'Every seller is verified. No fraud, no fake listings.'},
+        {icon:'fa-truck',       color:'#43A047', num:'03', title:'Local Fast Delivery',  desc:'Location-based sellers mean shorter delivery and fresher plants.'},
+        {icon:'fa-seedling',    color:'#4CAF50', num:'04', title:'Care & Grow',          desc:'Use our plant care tracker to keep your plant healthy forever.'},
+      ]; %>
+      <% steps.forEach((s,i) => { %>
+      <div class="col-sm-6 col-lg-3 fade-in-up" style="animation-delay:<%=i*0.1%>s">
+        <div style="background:var(--white);border-radius:var(--radius);padding:2rem 1.5rem;box-shadow:var(--shadow);height:100%;border-top:4px solid <%=s.color%>">
+          <div style="width:64px;height:64px;background:var(--green-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.5rem;color:<%=s.color%>"><i class="fas <%= s.icon %>"></i></div>
+          <div style="font-size:2rem;font-weight:800;color:var(--green-pale);margin-bottom:.3rem"><%= s.num %></div>
+          <h5 style="font-size:1rem;margin-bottom:.5rem"><%= s.title %></h5>
+          <p style="font-size:.88rem;color:var(--text-light)"><%= s.desc %></p>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- ── WHY CHOOSE US ── -->
+<section class="py-5" style="background:linear-gradient(135deg,var(--green-dark),var(--green-mid))">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-5">
+        <img src="/images/plants/why-us.jpg" alt="Happy plant owner" style="width:100%;border-radius:var(--radius);box-shadow:0 20px 50px rgba(0,0,0,0.3)"/>
+      </div>
+      <div class="col-lg-7">
+        <div style="color:var(--accent-light);font-weight:600;margin-bottom:.5rem"><i class="fas fa-star me-2"></i>Why Choose Baghban</div>
+        <h2 style="color:var(--white);font-size:2rem;margin-bottom:1.5rem">Pakistan's Most Trusted Plant Marketplace</h2>
+        <% const why = [
+          {icon:'fa-user-check',   title:'Seller Verification',     desc:'Every seller goes through our review process before they can sell.'},
+          {icon:'fa-map-marker-alt',title:'Location-Based Delivery', desc:'Find the nearest verified sellers for faster, safer plant delivery.'},
+          {icon:'fa-heart',        title:'Plant Care Support',       desc:'Our built-in care tracker helps you keep every plant alive and thriving.'},
+          {icon:'fa-star',         title:'Community Reviews',        desc:'Honest reviews covering seller, plant condition, and packaging.'},
+        ]; %>
+        <% why.forEach(w => { %>
+        <div class="d-flex gap-3 mb-3" style="background:rgba(255,255,255,.08);border-radius:var(--radius-sm);padding:1rem">
+          <div style="width:42px;height:42px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent-light)"><i class="fas <%= w.icon %>"></i></div>
+          <div>
+            <div style="color:var(--white);font-weight:600;font-size:.95rem"><%= w.title %></div>
+            <div style="color:rgba(255,255,255,.75);font-size:.85rem"><%= w.desc %></div>
+          </div>
+        </div>
+        <% }) %>
+        <div class="mt-4">
+          <a href="/plants" class="btn-accent btn me-3">Start Shopping</a>
+          <a href="/auth/register?role=seller" class="btn btn-outline-light" style="border-radius:25px;font-weight:600">Sell on Baghban</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="py-5 text-center bg-green-light">
+  <div class="container">
+    <h2 class="section-title mb-2">Ready to Start Your Plant Journey?</h2>
+    <p class="section-subtitle mb-4">Join thousands of plant lovers across Pakistan</p>
+    <a href="/auth/register" class="btn-primary btn btn-lg me-3">Create Free Account</a>
+    <a href="/auth/register?role=seller" class="btn-outline-primary btn btn-lg">Become a Seller</a>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

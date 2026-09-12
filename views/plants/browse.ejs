@@ -1,0 +1,157 @@
+<%- include('../partials/header') %>
+
+<section class="py-4" style="background:linear-gradient(135deg,var(--green-dark),var(--green-mid));color:white">
+  <div class="container">
+    <h1 style="color:white;font-size:1.8rem;margin-bottom:.3rem"><i class="fas fa-store me-2"></i>Browse Plants</h1>
+    <p style="opacity:.8;margin:0">Showing <%= total %> plants from verified sellers across Pakistan</p>
+  </div>
+</section>
+
+<section class="py-4">
+  <div class="container">
+    <!-- Search bar -->
+    <form action="/plants" method="GET" class="mb-4">
+      <div class="search-wrap">
+        <i class="fas fa-search" style="color:#aaa"></i>
+        <input type="text" name="search" value="<%= filters.search||'' %>" placeholder="Search plants..."/>
+        <select name="city" class="auto-submit">
+          <option value="">All Cities</option>
+          <% cities.forEach(c => { %><option value="<%= c %>" <%=filters.city===c?'selected':''%>><%= c %></option><% }) %>
+        </select>
+        <button type="submit" class="btn-search"><i class="fas fa-search me-1"></i>Search</button>
+      </div>
+    </form>
+
+    <div class="row g-4">
+      <!-- ── Filters sidebar ── -->
+      <div class="col-lg-3">
+        <form action="/plants" method="GET" id="filterForm">
+          <% if(filters.search) { %><input type="hidden" name="search" value="<%= filters.search %>"/><% } %>
+          <div class="filter-card">
+            <div class="filter-title"><i class="fas fa-filter me-2 text-green"></i>Filter Results</div>
+
+            <div class="mb-3">
+              <label class="form-label">Category</label>
+              <select name="category" class="form-select form-select-sm auto-submit">
+                <option value="all">All Categories</option>
+                <% ['indoor','outdoor','succulents','flowering','herbs','trees','aquatic','other'].forEach(c=>{ %>
+                <option value="<%= c %>" <%=filters.category===c?'selected':''%>><%= c.charAt(0).toUpperCase()+c.slice(1) %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">City</label>
+              <select name="city" class="form-select form-select-sm auto-submit">
+                <option value="all">All Cities</option>
+                <% cities.forEach(c=>{ %><option value="<%= c %>" <%=filters.city===c?'selected':''%>><%= c %></option><% }) %>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Price Range</label>
+              <div class="d-flex gap-2">
+                <input type="number" name="minPrice" value="<%= filters.minPrice||'' %>" placeholder="Min" class="form-control form-control-sm"/>
+                <input type="number" name="maxPrice" value="<%= filters.maxPrice||'' %>" placeholder="Max" class="form-control form-control-sm"/>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Care Level</label>
+              <select name="careLevel" class="form-select form-select-sm auto-submit">
+                <option value="all">All Levels</option>
+                <option value="easy" <%=filters.careLevel==='easy'?'selected':''%>>Easy</option>
+                <option value="moderate" <%=filters.careLevel==='moderate'?'selected':''%>>Moderate</option>
+                <option value="expert" <%=filters.careLevel==='expert'?'selected':''%>>Expert</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Sort By</label>
+              <select name="sort" class="form-select form-select-sm auto-submit">
+                <option value="" <%=!filters.sort?'selected':''%>>Newest First</option>
+                <option value="price_asc"  <%=filters.sort==='price_asc'?'selected':''%>>Price: Low to High</option>
+                <option value="price_desc" <%=filters.sort==='price_desc'?'selected':''%>>Price: High to Low</option>
+                <option value="popular"    <%=filters.sort==='popular'?'selected':''%>>Most Popular</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn-primary btn w-100 btn-sm">Apply Filters</button>
+            <a href="/plants" class="btn btn-outline-secondary w-100 btn-sm mt-2">Clear All</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── Plant grid ── -->
+      <div class="col-lg-9">
+        <% if (plants.length === 0) { %>
+        <div class="empty-state">
+          <div class="empty-icon">🌿</div>
+          <h5>No plants found</h5>
+          <p>Try adjusting your filters or search a different term.</p>
+          <a href="/plants" class="btn-primary btn mt-2">Clear Filters</a>
+        </div>
+        <% } else { %>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span style="color:var(--text-light);font-size:.9rem">Showing <%= plants.length %> of <%= total %> results</span>
+        </div>
+        <div class="row g-3">
+          <% plants.forEach(plant => { %>
+          <div class="col-sm-6 col-md-4">
+            <div class="plant-card h-100">
+              <a href="/plants/<%= plant._id %>">
+                <img src="<%= plant.images[0] || '/images/plants/default-plant.jpg' %>" alt="<%= plant.title %>" loading="lazy"/>
+              </a>
+              <div class="plant-card-body">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="badge-category"><%= plant.category %></span>
+                  <% if(plant.seller.isVerified){%><span class="badge-verified"><i class="fas fa-check-circle"></i> Verified</span><%}%>
+                </div>
+                <h6 class="plant-card-title mt-1">
+                  <a href="/plants/<%= plant._id %>" style="color:inherit;text-decoration:none"><%= plant.title %></a>
+                </h6>
+                <div class="plant-card-seller mb-1">
+                  <i class="fas fa-store me-1"></i><%= plant.seller.businessName || plant.seller.name %>
+                  <span class="ms-2"><i class="fas fa-map-marker-alt me-1"></i><%= plant.seller.city %></span>
+                </div>
+                <% if(plant.seller.averageRating > 0){ %>
+                <div class="stars-sm mb-2">
+                  <% for(let i=1;i<=5;i++){%><i class="fas fa-star<%=i<=Math.round(plant.seller.averageRating)?'':'-o'%>"></i><%}%>
+                  <span style="font-size:.75rem;color:var(--text-light)">(<%= plant.seller.averageRating %>)</span>
+                </div>
+                <% } %>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <span class="plant-card-price">Rs. <%= plant.price.toLocaleString() %></span>
+                  <a href="/plants/<%= plant._id %>" class="btn-sm-green">View Details</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+
+        <!-- Pagination -->
+        <% if(pages > 1){ %>
+        <nav class="mt-4 d-flex justify-content-center">
+          <ul class="pagination">
+            <li class="page-item <%=page<=1?'disabled':''%>">
+              <a class="page-link" href="/plants?<% var _p=page-1; var _q=[]; if(filters.search)_q.push('search='+encodeURIComponent(filters.search)); if(filters.city&&filters.city!='all')_q.push('city='+filters.city); if(filters.category&&filters.category!='all')_q.push('category='+filters.category); if(filters.minPrice)_q.push('minPrice='+filters.minPrice); if(filters.maxPrice)_q.push('maxPrice='+filters.maxPrice); if(filters.careLevel&&filters.careLevel!='all')_q.push('careLevel='+filters.careLevel); if(filters.sort)_q.push('sort='+filters.sort); _q.push('page='+_p); %><%= _q.join('&') %>"><i class="fas fa-chevron-left"></i></a>
+            </li>
+            <% for(let i=1;i<=pages;i++){ %>
+            <li class="page-item <%=i===page?'active':''%>">
+              <a class="page-link" href="/plants?<% var _p=i; var _q=[]; if(filters.search)_q.push('search='+encodeURIComponent(filters.search)); if(filters.city&&filters.city!='all')_q.push('city='+filters.city); if(filters.category&&filters.category!='all')_q.push('category='+filters.category); if(filters.minPrice)_q.push('minPrice='+filters.minPrice); if(filters.maxPrice)_q.push('maxPrice='+filters.maxPrice); if(filters.careLevel&&filters.careLevel!='all')_q.push('careLevel='+filters.careLevel); if(filters.sort)_q.push('sort='+filters.sort); _q.push('page='+_p); %><%= _q.join('&') %>"><%= i %></a>
+            </li>
+            <% } %>
+            <li class="page-item <%=page>=pages?'disabled':''%>">
+              <a class="page-link" href="/plants?<% var _p=page+1; var _q=[]; if(filters.search)_q.push('search='+encodeURIComponent(filters.search)); if(filters.city&&filters.city!='all')_q.push('city='+filters.city); if(filters.category&&filters.category!='all')_q.push('category='+filters.category); if(filters.minPrice)_q.push('minPrice='+filters.minPrice); if(filters.maxPrice)_q.push('maxPrice='+filters.maxPrice); if(filters.careLevel&&filters.careLevel!='all')_q.push('careLevel='+filters.careLevel); if(filters.sort)_q.push('sort='+filters.sort); _q.push('page='+_p); %><%= _q.join('&') %>"><i class="fas fa-chevron-right"></i></a>
+            </li>
+          </ul>
+        </nav>
+        <% } %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

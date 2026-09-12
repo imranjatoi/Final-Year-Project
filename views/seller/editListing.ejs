@@ -1,0 +1,41 @@
+<%- include('../partials/header') %>
+<section class="py-5" style="background:var(--green-bg)">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="form-card">
+          <h3 class="section-title mb-1"><i class="fas fa-edit me-2"></i>Edit Listing</h3>
+          <div class="section-divider mb-4"></div>
+          <form action="/seller/edit-listing/<%= listing._id %>" method="POST" enctype="multipart/form-data">
+            <div class="row g-3">
+              <div class="col-12"><label class="form-label">Plant Title</label><input type="text" name="title" value="<%= listing.title %>" class="form-control" required/></div>
+              <div class="col-12"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="4" required><%= listing.description %></textarea></div>
+              <div class="col-sm-6"><label class="form-label">Price (Rs.)</label><input type="number" name="price" value="<%= listing.price %>" class="form-control" required/></div>
+              <div class="col-sm-6"><label class="form-label">Stock</label><input type="number" name="stock" value="<%= listing.stock %>" class="form-control" required/></div>
+              <div class="col-sm-6"><label class="form-label">Category</label><select name="category" class="form-select"><% ['indoor','outdoor','succulents','flowering','herbs','trees','aquatic','other'].forEach(c=>{%><option value="<%= c %>" <%=listing.category===c?'selected':''%>><%= c.charAt(0).toUpperCase()+c.slice(1) %></option><%})%></select></div>
+              <div class="col-sm-6"><label class="form-label">Care Level</label><select name="careLevel" class="form-select"><% ['easy','moderate','expert'].forEach(c=>{%><option value="<%= c %>" <%=listing.careLevel===c?'selected':''%>><%= c.charAt(0).toUpperCase()+c.slice(1) %></option><%})%></select></div>
+              <div class="col-sm-6"><label class="form-label">Sunlight</label><select name="sunlight" class="form-select"><% ['low','medium','high'].forEach(c=>{%><option value="<%= c %>" <%=listing.sunlight===c?'selected':''%>><%= c.charAt(0).toUpperCase()+c.slice(1) %></option><%})%></select></div>
+              <div class="col-sm-6"><label class="form-label">Watering</label><select name="watering" class="form-select"><% [['daily','Daily'],['every2days','Every 2 Days'],['weekly','Weekly'],['biweekly','Bi-Weekly']].forEach(([v,l])=>{%><option value="<%= v %>" <%=listing.watering===v?'selected':''%>><%= l %></option><%})%></select></div>
+              <div class="col-sm-6"><label class="form-label">Availability</label><select name="isAvailable" class="form-select"><option value="true" <%=listing.isAvailable?'selected':''%>>Available</option><option value="false" <%=!listing.isAvailable?'selected':''%>>Unavailable</option></select></div>
+              <div class="col-sm-6"><label class="form-label">City</label><select name="city" class="form-select"><% ['Lahore','Karachi','Islamabad','Rawalpindi','Faisalabad','Multan','Peshawar','Quetta','Sialkot','Gujranwala'].forEach(c=>{%><option value="<%= c %>" <%=listing.city===c?'selected':''%>><%= c %></option><%})%></select></div>
+              <div class="col-12"><label class="form-label">Tags</label><input type="text" name="tags" class="form-control" value="<%= (listing.tags ? listing.tags.join(', ') : '') %>"/></div>
+              <div class="col-12">
+                <label class="form-label">Current Images</label>
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                  <% listing.images && listing.images.forEach(img=>{ %><img src="<%= img %>" style="width:70px;height:70px;border-radius:var(--radius-sm);object-fit:cover"/><% }) %>
+                </div>
+                <label class="form-label">Upload New Images (replaces existing)</label>
+                <input type="file" name="images" class="form-control" multiple accept="image/*"/>
+              </div>
+            </div>
+            <div class="d-flex gap-3 mt-4">
+              <button type="submit" class="btn-primary btn btn-lg">Save Changes</button>
+              <a href="/seller/listings" class="btn btn-outline-secondary btn-lg" style="border-radius:25px">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

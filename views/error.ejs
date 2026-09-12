@@ -1,0 +1,10 @@
+<%- include('partials/header') %>
+<section class="py-5 min-vh-100 d-flex align-items-center text-center" style="background:var(--green-bg)">
+  <div class="container">
+    <div style="font-size:4rem">⚠️</div>
+    <h2 style="color:var(--green-dark)">Something went wrong</h2>
+    <p style="color:var(--text-light)"><%= message || 'An unexpected error occurred.' %></p>
+    <a href="/" class="btn-primary btn mt-3">Go Home</a>
+  </div>
+</section>
+<%- include('partials/footer') %>

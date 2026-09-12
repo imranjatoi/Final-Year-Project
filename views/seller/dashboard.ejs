@@ -1,0 +1,131 @@
+<%- include('../partials/header') %>
+<div class="d-flex" style="min-height:100vh">
+  <!-- Sidebar -->
+  <div class="seller-sidebar" style="width:240px;flex-shrink:0">
+    <div style="padding:1.4rem 1.2rem;border-bottom:1px solid rgba(255,255,255,.15)">
+      <div style="color:white;font-weight:700;font-size:1.1rem"><i class="fas fa-leaf me-2"></i>Seller Panel</div>
+      <div style="color:rgba(255,255,255,.6);font-size:.8rem"><%= currentUser.name %></div>
+      <% if(currentUser.isVerified){ %><span class="badge-verified mt-1"><i class="fas fa-check-circle"></i> Verified</span>
+      <% } else { %><span class="badge-pending mt-1"><i class="fas fa-clock"></i> <%= currentUser.verificationStatus %></span><% } %>
+    </div>
+    <nav class="mt-2">
+      <a href="/seller/dashboard" class="seller-nav-link active"><i class="fas fa-chart-line"></i>Dashboard</a>
+      <a href="/seller/listings" class="seller-nav-link"><i class="fas fa-list"></i>My Listings</a>
+      <% if(currentUser.isVerified){ %>
+      <a href="/seller/add-listing" class="seller-nav-link"><i class="fas fa-plus-circle"></i>Add Listing</a>
+      <% } %>
+      <a href="/seller/orders" class="seller-nav-link"><i class="fas fa-clipboard-list"></i>Orders</a>
+      <a href="/auth/profile" class="seller-nav-link"><i class="fas fa-user"></i>Profile</a>
+      <a href="/auth/logout" class="seller-nav-link" style="margin-top:auto"><i class="fas fa-sign-out-alt"></i>Logout</a>
+    </nav>
+  </div>
+
+  <!-- Main content -->
+  <div style="flex:1;padding:2rem;background:#F4FAF4;overflow-x:auto">
+    <h3 class="section-title mb-4">Welcome, <%= currentUser.name.split(' ')[0] %>! 👋</h3>
+
+    <% if(!currentUser.isVerified){ %>
+    <div style="background:#FFF8E1;border-radius:var(--radius);padding:1.2rem;margin-bottom:1.5rem;border-left:4px solid #FFB300">
+      <i class="fas fa-clock me-2" style="color:#F57F17"></i>
+      <strong>Verification Pending</strong> – Your seller account is under review. You can list plants once verified.
+    </div>
+    <% } %>
+
+    <!-- Stats cards -->
+    <div class="row g-3 mb-4">
+      <% const dashStats = [
+        {icon:'fa-list', label:'Total Listings',   val: stats.totalListings,   color:'#2E7D32'},
+        {icon:'fa-store',label:'Active Listings',   val: stats.activeListings,  color:'#388E3C'},
+        {icon:'fa-clipboard-list',label:'Total Orders',val: stats.totalOrders,  color:'#1565C0'},
+        {icon:'fa-bell', label:'Pending Orders',    val: stats.pendingOrders,   color:'#F57F17'},
+        {icon:'fa-check-circle',label:'Completed',  val: stats.completedOrders, color:'#2E7D32'},
+        {icon:'fa-rupee-sign',label:'Revenue (Rs)', val: stats.revenue?.toLocaleString(), color:'#7B1FA2'},
+      ]; %>
+      <% dashStats.forEach(s => { %>
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="dash-stat-card" style="border-top-color:<%= s.color %>">
+          <div class="stat-icon"><i class="fas <%= s.icon %>" style="color:<%= s.color %>"></i></div>
+          <div class="stat-val mt-2"><%= s.val %></div>
+          <div class="stat-lbl"><%= s.label %></div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+
+    <!-- Recent Orders -->
+    <div style="background:white;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:1.5rem">
+      <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <h5 class="section-title mb-0" style="font-size:1.1rem">Recent Orders</h5>
+        <a href="/seller/orders" class="btn-sm-green">View All</a>
+      </div>
+      <% if(orders.length === 0){ %>
+      <div class="empty-state" style="padding:2rem"><div class="empty-icon" style="font-size:2.5rem">📦</div><p>No orders yet.</p></div>
+      <% } else { %>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:var(--green-bg)">
+            <th style="padding:.7rem 1rem;font-size:.82rem;color:var(--green-dark)">Order ID</th>
+            <th style="padding:.7rem 1rem;font-size:.82rem;color:var(--green-dark)">Plant</th>
+            <th style="padding:.7rem 1rem;font-size:.82rem;color:var(--green-dark)">Buyer</th>
+            <th style="padding:.7rem 1rem;font-size:.82rem;color:var(--green-dark)">Amount</th>
+            <th style="padding:.7rem 1rem;font-size:.82rem;color:var(--green-dark)">Status</th>
+            <th style="padding:.7rem 1rem;font-size:.82rem;color:var(--green-dark)">Action</th>
+          </tr></thead>
+          <tbody>
+            <% orders.forEach(o => { %>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:.7rem 1rem;font-size:.82rem">#<%= o._id.toString().slice(-6).toUpperCase() %></td>
+              <td style="padding:.7rem 1rem;font-size:.82rem"><%= ((o.listing && o.listing.title) ? o.listing.title.substring(0,20) : 'Plant') %>...</td>
+              <td style="padding:.7rem 1rem;font-size:.82rem"><%= (o.buyer && o.buyer.name) || '' %></td>
+              <td style="padding:.7rem 1rem;font-size:.82rem;font-weight:600;color:var(--green-main)">Rs. <%= o.totalPrice ? o.totalPrice.toLocaleString() : '0' %></td>
+              <td style="padding:.7rem 1rem"><span class="order-status-badge status-badge-<%= o.status %>" style="font-size:.72rem"><%= o.status %></span></td>
+              <td style="padding:.7rem 1rem">
+                <% if(o.status === 'placed'){ %>
+                <form action="/seller/orders/<%= o._id %>/status" method="POST" style="display:inline">
+                  <input type="hidden" name="status" value="confirmed"/>
+                  <button type="submit" class="btn btn-success btn-sm" style="border-radius:20px;font-size:.75rem">Confirm</button>
+                </form>
+                <form action="/seller/orders/<%= o._id %>/status" method="POST" class="reject-form" style="display:inline">
+                  <input type="hidden" name="status" value="rejected"/>
+                  <input type="hidden" name="reason" value=""/>
+                  <button type="submit" class="btn btn-danger btn-sm" style="border-radius:20px;font-size:.75rem">Reject</button>
+                </form>
+                <% } else if(o.status === 'confirmed'){ %>
+                <form action="/seller/orders/<%= o._id %>/status" method="POST" style="display:inline">
+                  <input type="hidden" name="status" value="dispatched"/>
+                  <button type="submit" class="btn btn-primary btn-sm" style="border-radius:20px;font-size:.75rem;background:var(--green-main);border:none">Dispatch</button>
+                </form>
+                <% } else if(o.status === 'dispatched'){ %>
+                <form action="/seller/orders/<%= o._id %>/status" method="POST" style="display:inline">
+                  <input type="hidden" name="status" value="delivered"/>
+                  <button type="submit" class="btn btn-success btn-sm" style="border-radius:20px;font-size:.75rem">Mark Delivered</button>
+                </form>
+                <% } %>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <% } %>
+    </div>
+
+    <!-- Recent reviews -->
+    <% if(reviews.length > 0){ %>
+    <div style="background:white;border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem">
+      <h5 class="section-title mb-3" style="font-size:1.1rem">Recent Reviews</h5>
+      <% reviews.forEach(r => { %>
+      <div style="border-bottom:1px solid var(--border);padding:.8rem 0;display:flex;gap:1rem;align-items:start">
+        <img src="<%= r.buyer.avatar||'/images/default-avatar.png' %>" style="width:36px;height:36px;border-radius:50%;object-fit:cover"/>
+        <div>
+          <div style="font-weight:600;font-size:.88rem"><%= r.buyer.name %></div>
+          <div class="stars-sm"><% for(let i=1;i<=5;i++){%><i class="fas fa-star" style="color:<%=i<=r.overallRating?'#FFB300':'#ddd'%>"></i><%}%></div>
+          <% if(r.comment){ %><div style="font-size:.82rem;color:var(--text-mid)">"<%= r.comment %>"</div><% } %>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

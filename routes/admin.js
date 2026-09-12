@@ -1,0 +1,16 @@
+const express = require('express');
+const router  = express.Router();
+const ctrl    = require('../controllers/adminController');
+const { isLoggedIn, isAdmin } = require('../middleware/auth');
+router.use(isLoggedIn, isAdmin);
+router.get('/dashboard', ctrl.getDashboard);
+router.get('/sellers/pending', ctrl.getPendingSellers);
+router.get('/sellers', ctrl.getAllSellers);
+router.post('/sellers/:id/verify', ctrl.verifySeller);
+router.post('/sellers/:id/reject', ctrl.rejectSeller);
+router.post('/sellers/:id/toggle', ctrl.toggleUserStatus);
+router.get('/listings', ctrl.getAllListings);
+router.post('/listings/:id/delete', ctrl.deleteListing);
+router.get('/orders', ctrl.getAllOrders);
+router.get('/users', ctrl.getAllUsers);
+module.exports = router;

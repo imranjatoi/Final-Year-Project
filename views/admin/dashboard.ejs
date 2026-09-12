@@ -1,0 +1,57 @@
+<%- include('../partials/header') %>
+<div class="d-flex" style="min-height:100vh">
+  <div class="admin-sidebar" style="width:240px;flex-shrink:0">
+    <div class="brand"><h5><i class="fas fa-shield-alt me-2"></i>Admin Panel</h5><div style="font-size:.75rem;color:rgba(255,255,255,.6)"><%= currentUser.name %></div></div>
+    <nav class="mt-2">
+      <a href="/admin/dashboard"        class="admin-nav-link active"><span class="icon">📊</span>Dashboard</a>
+      <a href="/admin/sellers/pending"  class="admin-nav-link"><span class="icon">⏳</span>Pending Sellers <% if(stats.pendingSellers>0){%><span style="background:#FF8F00;color:white;border-radius:20px;font-size:.7rem;padding:.1rem .5rem;margin-left:auto"><%= stats.pendingSellers %></span><%}%></a>
+      <a href="/admin/sellers"          class="admin-nav-link"><span class="icon">🏪</span>All Sellers</a>
+      <a href="/admin/users"            class="admin-nav-link"><span class="icon">👥</span>All Buyers</a>
+      <a href="/admin/listings"         class="admin-nav-link"><span class="icon">🌿</span>All Listings</a>
+      <a href="/admin/orders"           class="admin-nav-link"><span class="icon">📦</span>All Orders</a>
+      <a href="/auth/logout"            class="admin-nav-link"><span class="icon">🚪</span>Logout</a>
+    </nav>
+  </div>
+  <div class="admin-content" style="flex:1">
+    <h3 class="section-title mb-4">Dashboard Overview</h3>
+    <div class="row g-3 mb-4">
+      <% const cards=[
+        {icon:'👥',label:'Total Buyers',  val:stats.totalUsers,   color:'#1565C0'},
+        {icon:'🏪',label:'Verified Sellers',val:stats.totalSellers,color:'#2E7D32'},
+        {icon:'⏳',label:'Pending Verification',val:stats.pendingSellers,color:'#F57F17'},
+        {icon:'🌿',label:'Plant Listings',  val:stats.totalListings,color:'#388E3C'},
+        {icon:'📦',label:'Total Orders',    val:stats.totalOrders,  color:'#7B1FA2'},
+        {icon:'💰',label:'Revenue (Rs.)',   val:stats.revenue?.toLocaleString(),color:'#00796B'},
+      ]; %>
+      <% cards.forEach(c=>{ %>
+      <div class="col-6 col-md-4 col-lg-2">
+        <div class="dash-stat-card" style="border-top-color:<%= c.color %>">
+          <div style="font-size:1.8rem"><%= c.icon %></div>
+          <div class="stat-val" style="color:<%= c.color %>"><%= c.val %></div>
+          <div class="stat-lbl"><%= c.label %></div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+    <div class="admin-table">
+      <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <h5 class="section-title mb-0" style="font-size:1rem">Recent Orders</h5>
+        <a href="/admin/orders" class="btn-sm-green">View All</a>
+      </div>
+      <table><thead><tr><th>Order ID</th><th>Buyer</th><th>Seller</th><th>Plant</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody>
+        <% recentOrders.forEach(o=>{ %>
+        <tr>
+          <td>#<%= o._id.toString().slice(-6).toUpperCase() %></td>
+          <td><%= (o.buyer && o.buyer.name) || '' %></td>
+          <td><%= (o.seller ? o.seller.name : '') %></td>
+          <td><%= ((o.listing && o.listing.title) ? o.listing.title.substring(0,20) : 'Plant') %>...</td>
+          <td style="font-weight:600;color:var(--green-main)">Rs. <%= o.totalPrice ? o.totalPrice.toLocaleString() : '0' %></td>
+          <td><span class="order-status-badge status-badge-<%= o.status %>" style="font-size:.72rem"><%= o.status %></span></td>
+        </tr>
+        <% }) %>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

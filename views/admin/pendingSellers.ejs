@@ -1,0 +1,49 @@
+<%- include('../partials/header') %>
+<div class="d-flex" style="min-height:100vh">
+  <div class="admin-sidebar" style="width:240px;flex-shrink:0">
+    <div class="brand"><h5><i class="fas fa-shield-alt me-2"></i>Admin Panel</h5></div>
+    <nav class="mt-2">
+      <a href="/admin/dashboard" class="admin-nav-link"><span class="icon">📊</span>Dashboard</a>
+      <a href="/admin/sellers/pending" class="admin-nav-link active"><span class="icon">⏳</span>Pending Sellers</a>
+      <a href="/admin/sellers" class="admin-nav-link"><span class="icon">🏪</span>All Sellers</a>
+      <a href="/admin/users" class="admin-nav-link"><span class="icon">👥</span>All Buyers</a>
+      <a href="/admin/listings" class="admin-nav-link"><span class="icon">🌿</span>All Listings</a>
+      <a href="/admin/orders" class="admin-nav-link"><span class="icon">📦</span>All Orders</a>
+    </nav>
+  </div>
+  <div class="admin-content" style="flex:1">
+    <h3 class="section-title mb-4">⏳ Pending Seller Verifications (<%= sellers.length %>)</h3>
+    <% if(sellers.length===0){ %>
+    <div class="empty-state"><div class="empty-icon">✅</div><h5>All caught up! No pending applications.</h5></div>
+    <% } else { %>
+    <div class="row g-3">
+      <% sellers.forEach(s=>{ %>
+      <div class="col-md-6">
+        <div style="background:white;border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem">
+          <div class="d-flex gap-3 mb-3">
+            <img src="<%= s.avatar||'/images/default-avatar.png' %>" style="width:50px;height:50px;border-radius:50%;object-fit:cover"/>
+            <div>
+              <h6 class="mb-0"><%= s.businessName||s.name %></h6>
+              <div style="font-size:.8rem;color:var(--text-light)"><%= s.email %> | <%= s.phone||'No phone' %></div>
+              <div style="font-size:.8rem;color:var(--text-light)"><i class="fas fa-map-marker-alt me-1"></i><%= s.city %></div>
+            </div>
+          </div>
+          <% if(s.sellerDescription){ %><p style="font-size:.85rem;color:var(--text-mid);background:var(--green-bg);border-radius:var(--radius-sm);padding:.7rem">"<%= s.sellerDescription %>"</p><% } %>
+          <div style="font-size:.78rem;color:var(--text-light)" class="mb-3">Applied: <%= new Date(s.createdAt).toLocaleDateString('en-PK',{year:'numeric',month:'long',day:'numeric'}) %></div>
+          <div class="d-flex gap-2">
+            <form action="/admin/sellers/<%= s._id %>/verify" method="POST" style="flex:1">
+              <button type="submit" class="btn btn-success w-100" style="border-radius:20px"><i class="fas fa-check me-1"></i>Approve</button>
+            </form>
+            <form action="/admin/sellers/<%= s._id %>/reject" method="POST" class="reject-form" style="flex:1">
+              <input type="hidden" name="reason" value=""/>
+              <button type="submit" class="btn btn-danger w-100" style="border-radius:20px"><i class="fas fa-times me-1"></i>Reject</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

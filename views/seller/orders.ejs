@@ -1,0 +1,61 @@
+<%- include('../partials/header') %>
+<section class="py-5">
+  <div class="container">
+    <h2 class="section-title mb-1"><i class="fas fa-clipboard-list me-2"></i>Manage Orders</h2>
+    <div class="section-divider mb-4"></div>
+    <!-- Status filter -->
+    <div class="d-flex gap-2 flex-wrap mb-4">
+      <% ['all','placed','confirmed','dispatched','delivered','rejected','cancelled'].forEach(s=>{ %>
+      <a href="/seller/orders?status=<%= s %>" class="btn btn-sm <%=filterStatus===s?'btn-success':'btn-outline-secondary'%>" style="border-radius:20px;font-size:.82rem"><%= s.charAt(0).toUpperCase()+s.slice(1) %></a>
+      <% }) %>
+    </div>
+    <% if(orders.length === 0){ %>
+    <div class="empty-state"><div class="empty-icon">📦</div><h5>No orders found</h5></div>
+    <% } else { %>
+    <div class="row g-3">
+      <% orders.forEach(o => { %>
+      <div class="col-12">
+        <div style="background:white;border-radius:var(--radius);box-shadow:var(--shadow);padding:1.2rem">
+          <div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
+            <div>
+              <strong style="font-size:.82rem;color:var(--text-light)">ORDER #<%= o._id.toString().slice(-8).toUpperCase() %></strong>
+              <span class="ms-3" style="font-size:.8rem;color:var(--text-light)"><%= new Date(o.createdAt).toLocaleDateString('en-PK',{year:'numeric',month:'short',day:'numeric'}) %></span>
+            </div>
+            <span class="order-status-badge status-badge-<%= o.status %>"><%= o.status.toUpperCase() %></span>
+          </div>
+          <div class="d-flex gap-3 flex-wrap align-items-center">
+            <img src="<%= (o.listing && o.listing.images && o.listing.images[0])||'/images/plants/default-plant.jpg' %>" style="width:60px;height:60px;border-radius:var(--radius-sm);object-fit:cover"/>
+            <div class="flex-grow-1">
+              <div style="font-weight:600"><%= o.listing && o.listing.title || 'Plant' %></div>
+              <div style="font-size:.83rem;color:var(--text-mid)">Buyer: <strong><%= (o.buyer && o.buyer.name) || '' %></strong> | <%= (o.buyer && (o.buyer.phone || o.buyer.email)) || '' %></div>
+              <div style="font-size:.83rem">Qty: <%= o.quantity %> | <strong style="color:var(--green-main)">Rs. <%= o.totalPrice ? o.totalPrice.toLocaleString() : '0' %></strong> | <%= o.deliveryType %></div>
+              <% if(o.deliveryAddress){ %><div style="font-size:.8rem;color:var(--text-light)"><i class="fas fa-map-marker-alt me-1"></i><%= o.deliveryAddress %></div><% } %>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <% if(o.status === 'placed'){ %>
+              <form action="/seller/orders/<%= o._id %>/status" method="POST">
+                <input type="hidden" name="status" value="confirmed"/><button type="submit" class="btn btn-success btn-sm" style="border-radius:20px">✓ Confirm</button>
+              </form>
+              <form action="/seller/orders/<%= o._id %>/status" method="POST" class="reject-form">
+                <input type="hidden" name="status" value="rejected"/><input type="hidden" name="reason" value=""/>
+                <button type="submit" class="btn btn-danger btn-sm" style="border-radius:20px">✗ Reject</button>
+              </form>
+              <% } else if(o.status === 'confirmed'){ %>
+              <form action="/seller/orders/<%= o._id %>/status" method="POST">
+                <input type="hidden" name="status" value="dispatched"/><button type="submit" class="btn btn-primary btn-sm" style="border-radius:20px;background:var(--green-main);border:none">🚚 Dispatch</button>
+              </form>
+              <% } else if(o.status === 'dispatched'){ %>
+              <form action="/seller/orders/<%= o._id %>/status" method="POST">
+                <input type="hidden" name="status" value="delivered"/><button type="submit" class="btn btn-success btn-sm" style="border-radius:20px">✓ Mark Delivered</button>
+              </form>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

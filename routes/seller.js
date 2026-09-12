@@ -1,0 +1,17 @@
+const express = require('express');
+const router  = express.Router();
+const ctrl    = require('../controllers/sellerController');
+const orderCtrl = require('../controllers/orderController');
+const { isLoggedIn, isSeller } = require('../middleware/auth');
+const upload  = require('../middleware/upload');
+router.use(isLoggedIn, isSeller);
+router.get('/dashboard', ctrl.getDashboard);
+router.get('/listings', ctrl.getListings);
+router.get('/add-listing', ctrl.getAddListing);
+router.post('/add-listing', upload.array('images', 5), ctrl.postAddListing);
+router.get('/edit-listing/:id', ctrl.getEditListing);
+router.post('/edit-listing/:id', upload.array('images', 5), ctrl.postEditListing);
+router.post('/delete-listing/:id', ctrl.deleteListing);
+router.get('/orders', ctrl.getOrders);
+router.post('/orders/:id/status', orderCtrl.updateOrderStatus);
+module.exports = router;

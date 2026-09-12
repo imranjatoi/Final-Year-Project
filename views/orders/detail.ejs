@@ -1,0 +1,116 @@
+<%- include('../partials/header') %>
+<section class="py-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="form-card">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h4 class="section-title mb-0">Order Details</h4>
+              <span style="font-size:.82rem;color:var(--text-light)">#<%= order._id.toString().slice(-8).toUpperCase() %></span>
+            </div>
+            <span class="order-status-badge status-badge-<%= order.status %>" style="font-size:.88rem"><%= order.status.toUpperCase() %></span>
+          </div>
+
+          <div class="d-flex gap-4 mb-4 flex-wrap">
+            <img src="<%= (order.listing && order.listing.images && order.listing.images[0]) ? order.listing.images[0] : '/images/plants/default-plant.jpg' %>" style="width:100px;height:100px;border-radius:var(--radius);object-fit:cover"/>
+            <div>
+              <h5><%= order.listing && order.listing.title || 'Plant' %></h5>
+              <div style="font-size:.88rem;color:var(--text-mid)">
+                <div>Price per unit: Rs. <%= (order.totalPrice/order.quantity).toLocaleString() %></div>
+                <div>Quantity: <%= order.quantity %></div>
+                <div>Delivery: <%= order.deliveryType === 'delivery' ? 'Home Delivery' : 'Self Pickup' %></div>
+                <% if(order.deliveryAddress){ %><div>Address: <%= order.deliveryAddress %></div><% } %>
+              </div>
+              <div style="font-size:1.2rem;font-weight:700;color:var(--green-main);margin-top:.5rem">Total: Rs. <%= order.totalPrice ? order.totalPrice.toLocaleString() : '0' %></div>
+            </div>
+          </div>
+
+          <!-- Status Timeline -->
+          <h6 class="mb-3" style="color:var(--green-dark)"><i class="fas fa-history me-2"></i>Order Timeline</h6>
+          <div class="order-timeline mb-4">
+            <% const allStatuses = ['placed','confirmed','dispatched','delivered']; %>
+            <% allStatuses.forEach(s => { %>
+            <% const historyEntry = (order.statusHistory ? order.statusHistory.find(h => h.status === s) : null); %>
+            <div class="timeline-item <%=!historyEntry?'inactive':''%>">
+              <div style="font-weight:600;font-size:.9rem;color:<%=historyEntry?'var(--green-dark)':'#bbb'%>">
+                <%= s.charAt(0).toUpperCase()+s.slice(1) %>
+              </div>
+              <% if(historyEntry){ %>
+              <div style="font-size:.78rem;color:var(--text-light)">
+                <%= new Date(historyEntry.changedAt).toLocaleString('en-PK') %>
+                <% if(historyEntry.note){ %> – <%= historyEntry.note %><% } %>
+              </div>
+              <% } %>
+            </div>
+            <% }) %>
+            <% if(order.status === 'rejected'){ %>
+            <div class="timeline-item">
+              <div style="font-weight:600;font-size:.9rem;color:#C62828">Rejected</div>
+              <% if(order.rejectionReason){ %><div style="font-size:.78rem;color:var(--text-light)">Reason: <%= order.rejectionReason %></div><% } %>
+            </div>
+            <% } %>
+          </div>
+
+          <!-- Review form -->
+          <% if(order.status === 'delivered' && !order.reviewSubmitted && currentUser && String(currentUser._id) === String(order.buyer._id)){ %>
+          <div id="review" style="background:var(--green-bg);border-radius:var(--radius);padding:1.5rem">
+            <h5 class="section-title mb-3"><i class="fas fa-star me-2"></i>Write a Review</h5>
+            <form action="/reviews/submit" method="POST">
+              <input type="hidden" name="orderId" value="<%= order._id %>"/>
+              <div class="row g-3 mb-3">
+                <% const ratingFields = [{name:'sellerRating',label:'Seller Rating'},{name:'plantConditionRating',label:'Plant Condition'},{name:'packagingRating',label:'Packaging Quality'}]; %>
+                <% ratingFields.forEach(field => { %>
+                <div class="col-sm-4 text-center">
+                  <label class="form-label"><%= field.label %></label>
+                  <div class="star-input justify-content-center">
+                    <% for(let i=5;i>=1;i--){ %>
+                    <input type="radio" name="<%= field.name %>" value="<%= i %>" id="<%= field.name %>_<%= i %>" required style="display:none"/>
+                    <label for="<%= field.name %>_<%= i %>" style="font-size:1.8rem;cursor:pointer;color:#ddd;transition:color .15s">★</label>
+                    <% } %>
+                  </div>
+                </div>
+                <% }) %>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Your Comment</label>
+                <textarea name="comment" class="form-control" rows="3" placeholder="Share your experience with this plant and seller..."></textarea>
+              </div>
+              <button type="submit" class="btn-primary btn"><i class="fas fa-star me-2"></i>Submit Review</button>
+            </form>
+          </div>
+          <% } else if(order.reviewSubmitted){ %>
+          <div class="flash-success mt-3"><i class="fas fa-check-circle"></i> You have already reviewed this order. Thank you!</div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-4">
+        <div class="seller-card mb-3">
+          <h6 style="color:var(--green-dark)" class="mb-3"><i class="fas fa-user me-2"></i>Seller Info</h6>
+          <div style="font-size:.88rem;color:var(--text-mid);line-height:2">
+            <div><strong><%= (order.seller && (order.seller.businessName || order.seller.name)) || '' %></strong></div>
+            <div><i class="fas fa-map-marker-alt me-2 text-green"></i><%= (order.seller && order.seller.city) || '' %></div>
+            <div><i class="fas fa-phone me-2 text-green"></i><%= (order.seller && order.seller.phone) || '' || 'Not provided' %></div>
+          </div>
+        </div>
+        <div class="seller-card">
+          <h6 style="color:var(--green-dark)" class="mb-3"><i class="fas fa-user me-2"></i>Buyer Info</h6>
+          <div style="font-size:.88rem;color:var(--text-mid);line-height:2">
+            <div><strong><%= (order.buyer && order.buyer.name) || '' %></strong></div>
+            <div><i class="fas fa-envelope me-2 text-green"></i><%= (order.buyer && order.buyer.email) || '' %></div>
+            <% if((order.buyer && order.buyer.phone) || ''){ %><div><i class="fas fa-phone me-2 text-green"></i><%= (order.buyer && order.buyer.phone) || '' %></div><% } %>
+          </div>
+        </div>
+        <% if(['placed','confirmed'].includes(order.status) && currentUser && String(currentUser._id) === String(order.buyer._id)){ %>
+        <form action="/orders/<%= order._id %>/cancel" method="POST" class="confirm-delete mt-3">
+          <button type="submit" class="btn btn-outline-danger w-100" style="border-radius:25px">Cancel Order</button>
+        </form>
+        <% } %>
+        <a href="/orders" class="btn btn-outline-secondary w-100 mt-2" style="border-radius:25px"><i class="fas fa-arrow-left me-2"></i>Back to Orders</a>
+      </div>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

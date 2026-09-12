@@ -1,0 +1,41 @@
+<%- include('../partials/header') %>
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+      <div><h2 class="section-title mb-1"><i class="fas fa-list me-2"></i>My Listings</h2><div class="section-divider"></div></div>
+      <% if(currentUser.isVerified){ %><a href="/seller/add-listing" class="btn-primary btn"><i class="fas fa-plus me-2"></i>Add New Listing</a><% } %>
+    </div>
+    <% if(listings.length === 0){ %>
+    <div class="empty-state"><div class="empty-icon">🌿</div><h5>No listings yet</h5><% if(currentUser.isVerified){ %><a href="/seller/add-listing" class="btn-primary btn mt-2">Create First Listing</a><% } else { %><p>Get verified first to start listing plants.</p><% } %></div>
+    <% } else { %>
+    <div class="row g-3">
+      <% listings.forEach(l => { %>
+      <div class="col-sm-6 col-lg-4">
+        <div class="plant-card">
+          <img src="<%= l.images[0]||'/images/plants/default-plant.jpg' %>" style="height:180px"/>
+          <div class="plant-card-body">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="badge-category"><%= l.category %></span>
+              <span class="<%=l.isAvailable?'badge-verified':'badge-pending'%>"><%= l.isAvailable?'Active':'Inactive' %></span>
+            </div>
+            <h6 class="plant-card-title"><%= l.title %></h6>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="plant-card-price">Rs. <%= l.price.toLocaleString() %></span>
+              <span style="font-size:.8rem;color:var(--text-light)">Stock: <%= l.stock %></span>
+            </div>
+            <div class="d-flex gap-2">
+              <a href="/seller/edit-listing/<%= l._id %>" class="btn btn-outline-success btn-sm flex-grow-1" style="border-radius:20px">Edit</a>
+              <form action="/seller/delete-listing/<%= l._id %>" method="POST" class="confirm-delete">
+                <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius:20px"><i class="fas fa-trash"></i></button>
+              </form>
+              <a href="/plants/<%= l._id %>" class="btn btn-outline-secondary btn-sm" style="border-radius:20px" target="_blank"><i class="fas fa-eye"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

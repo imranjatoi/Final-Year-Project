@@ -1,0 +1,88 @@
+<%- include('../partials/header') %>
+<div class="d-flex" style="min-height:100vh">
+  <div class="admin-sidebar" style="width:240px;flex-shrink:0">
+    <div class="brand"><h5><i class="fas fa-shield-alt me-2"></i>Admin Panel</h5></div>
+    <nav class="mt-2">
+      <a href="/admin/dashboard" class="admin-nav-link"><span class="icon">📊</span>Dashboard</a>
+      <a href="/admin/sellers/pending" class="admin-nav-link"><span class="icon">⏳</span>Pending Sellers</a>
+      <a href="/admin/sellers" class="admin-nav-link <%- title.includes('Sellers')&&!title.includes('Pending')?'active':'' %>"><span class="icon">🏪</span>All Sellers</a>
+      <a href="/admin/users" class="admin-nav-link <%- title.includes('Users')?'active':'' %>"><span class="icon">👥</span>All Buyers</a>
+      <a href="/admin/listings" class="admin-nav-link <%- title.includes('Listings')?'active':'' %>"><span class="icon">🌿</span>All Listings</a>
+      <a href="/admin/orders" class="admin-nav-link <%- title.includes('Orders')?'active':'' %>"><span class="icon">📦</span>All Orders</a>
+    </nav>
+  </div>
+  <div class="admin-content" style="flex:1;overflow-x:auto">
+    <h3 class="section-title mb-4"><%= title %></h3>
+    <div class="admin-table">
+      <div style="padding:1rem 1.5rem;background:var(--green-dark);color:white;font-weight:600">Results</div>
+      <div style="padding:1.5rem;overflow-x:auto">
+        <% if(typeof sellers !== 'undefined' && sellers){ %>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:var(--green-bg)"><th style="padding:.7rem;font-size:.82rem">Name</th><th style="padding:.7rem;font-size:.82rem">Email</th><th style="padding:.7rem;font-size:.82rem">City</th><th style="padding:.7rem;font-size:.82rem">Status</th><th style="padding:.7rem;font-size:.82rem">Active</th><th style="padding:.7rem;font-size:.82rem">Actions</th></tr></thead>
+          <tbody>
+          <% sellers.forEach(s=>{ %><tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:.7rem;font-size:.83rem"><strong><%= s.businessName||s.name %></strong></td>
+            <td style="padding:.7rem;font-size:.83rem"><%= s.email %></td>
+            <td style="padding:.7rem;font-size:.83rem"><%= s.city %></td>
+            <td style="padding:.7rem"><span class="<%=s.isVerified?'badge-verified':'badge-pending'%>"><%= s.verificationStatus %></span></td>
+            <td style="padding:.7rem"><span style="color:<%=s.isActive?'var(--green-main)':'#C62828'%>;font-size:.82rem"><%=s.isActive?'Active':'Suspended'%></span></td>
+            <td style="padding:.7rem">
+              <form action="/admin/sellers/<%= s._id %>/toggle" method="POST" style="display:inline">
+                <button type="submit" class="btn btn-sm <%=s.isActive?'btn-warning':'btn-success'%>" style="border-radius:20px;font-size:.75rem"><%=s.isActive?'Suspend':'Activate'%></button>
+              </form>
+            </td>
+          </tr><% }) %>
+          </tbody>
+        </table>
+        <% } else if(typeof listings !== 'undefined' && listings){ %>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:var(--green-bg)"><th style="padding:.7rem;font-size:.82rem">Title</th><th style="padding:.7rem;font-size:.82rem">Seller</th><th style="padding:.7rem;font-size:.82rem">City</th><th style="padding:.7rem;font-size:.82rem">Price</th><th style="padding:.7rem;font-size:.82rem">Status</th><th style="padding:.7rem;font-size:.82rem">Actions</th></tr></thead>
+          <tbody>
+          <% listings.forEach(l=>{ %><tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:.7rem;font-size:.83rem"><%= l.title %></td>
+            <td style="padding:.7rem;font-size:.83rem"><%= (l.seller ? (l.seller.businessName || l.seller.name) : "Unknown") %></td>
+            <td style="padding:.7rem;font-size:.83rem"><%= (l.seller ? l.seller.city : '') %></td>
+            <td style="padding:.7rem;font-size:.83rem;font-weight:600;color:var(--green-main)">Rs. <%= (l.price ? l.price.toLocaleString() : '0') %></td>
+            <td style="padding:.7rem"><span class="<%=l.isAvailable?'badge-verified':'badge-pending'%>"><%=l.isAvailable?'Active':'Inactive'%></span></td>
+            <td style="padding:.7rem">
+              <form action="/admin/listings/<%= l._id %>/delete" method="POST" class="confirm-delete" style="display:inline">
+                <button type="submit" class="btn btn-danger btn-sm" style="border-radius:20px;font-size:.75rem"><i class="fas fa-trash"></i></button>
+              </form>
+            </td>
+          </tr><% }) %>
+          </tbody>
+        </table>
+        <% } else if(typeof orders !== 'undefined' && orders){ %>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:var(--green-bg)"><th style="padding:.7rem;font-size:.82rem">Order ID</th><th style="padding:.7rem;font-size:.82rem">Buyer</th><th style="padding:.7rem;font-size:.82rem">Seller</th><th style="padding:.7rem;font-size:.82rem">Plant</th><th style="padding:.7rem;font-size:.82rem">Amount</th><th style="padding:.7rem;font-size:.82rem">Status</th><th style="padding:.7rem;font-size:.82rem">Date</th></tr></thead>
+          <tbody>
+          <% orders.forEach(o=>{ %><tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:.7rem;font-size:.8rem">#<%= o._id.toString().slice(-6).toUpperCase() %></td>
+            <td style="padding:.7rem;font-size:.83rem"><%= (o.buyer && o.buyer.name) || '' %></td>
+            <td style="padding:.7rem;font-size:.83rem"><%= (o.seller && (o.seller.businessName || o.seller.name)) || '' %></td>
+            <td style="padding:.7rem;font-size:.83rem"><%= ((o.listing && o.listing.title) ? o.listing.title.substring(0,18) : 'Plant') %>...</td>
+            <td style="padding:.7rem;font-size:.83rem;font-weight:600;color:var(--green-main)">Rs. <%= o.totalPrice ? o.totalPrice.toLocaleString() : '0' %></td>
+            <td style="padding:.7rem"><span class="order-status-badge status-badge-<%= o.status %>" style="font-size:.72rem"><%= o.status %></span></td>
+            <td style="padding:.7rem;font-size:.78rem;color:var(--text-light)"><%= new Date(o.createdAt).toLocaleDateString('en-PK',{month:'short',day:'numeric',year:'numeric'}) %></td>
+          </tr><% }) %>
+          </tbody>
+        </table>
+        <% } else if(typeof users !== 'undefined' && users){ %>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:var(--green-bg)"><th style="padding:.7rem;font-size:.82rem">Name</th><th style="padding:.7rem;font-size:.82rem">Email</th><th style="padding:.7rem;font-size:.82rem">City</th><th style="padding:.7rem;font-size:.82rem">Joined</th><th style="padding:.7rem;font-size:.82rem">Status</th></tr></thead>
+          <tbody>
+          <% users.forEach(u=>{ %><tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:.7rem;font-size:.83rem"><strong><%= u.name %></strong></td>
+            <td style="padding:.7rem;font-size:.83rem"><%= u.email %></td>
+            <td style="padding:.7rem;font-size:.83rem"><%= u.city||'–' %></td>
+            <td style="padding:.7rem;font-size:.78rem;color:var(--text-light)"><%= new Date(u.createdAt).toLocaleDateString('en-PK',{month:'short',day:'numeric',year:'numeric'}) %></td>
+            <td style="padding:.7rem"><span style="color:<%=u.isActive?'var(--green-main)':'#C62828'%>;font-size:.82rem;font-weight:600"><%=u.isActive?'Active':'Suspended'%></span></td>
+          </tr><% }) %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>
