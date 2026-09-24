@@ -69,7 +69,7 @@
         </table>
         <% } else if(typeof users !== 'undefined' && users){ %>
         <table style="width:100%;border-collapse:collapse">
-          <thead><tr style="background:var(--green-bg)"><th style="padding:.7rem;font-size:.82rem">Name</th><th style="padding:.7rem;font-size:.82rem">Email</th><th style="padding:.7rem;font-size:.82rem">City</th><th style="padding:.7rem;font-size:.82rem">Joined</th><th style="padding:.7rem;font-size:.82rem">Status</th></tr></thead>
+          <thead><tr style="background:var(--green-bg)"><th style="padding:.7rem;font-size:.82rem">Name</th><th style="padding:.7rem;font-size:.82rem">Email</th><th style="padding:.7rem;font-size:.82rem">City</th><th style="padding:.7rem;font-size:.82rem">Joined</th><th style="padding:.7rem;font-size:.82rem">Status</th><th style="padding:.7rem;font-size:.82rem">Actions</th></tr></thead>
           <tbody>
           <% users.forEach(u=>{ %><tr style="border-bottom:1px solid var(--border)">
             <td style="padding:.7rem;font-size:.83rem"><strong><%= u.name %></strong></td>
@@ -77,6 +77,11 @@
             <td style="padding:.7rem;font-size:.83rem"><%= u.city||'–' %></td>
             <td style="padding:.7rem;font-size:.78rem;color:var(--text-light)"><%= new Date(u.createdAt).toLocaleDateString('en-PK',{month:'short',day:'numeric',year:'numeric'}) %></td>
             <td style="padding:.7rem"><span style="color:<%=u.isActive?'var(--green-main)':'#C62828'%>;font-size:.82rem;font-weight:600"><%=u.isActive?'Active':'Suspended'%></span></td>
+            <td style="padding:.7rem">
+              <form action="/admin/users/<%= u._id %>/toggle" method="POST" style="display:inline">
+                <button type="submit" class="btn btn-sm <%=u.isActive?'btn-warning':'btn-success'%>" style="border-radius:20px;font-size:.75rem"><%=u.isActive?'Suspend':'Activate'%></button>
+              </form>
+            </td>
           </tr><% }) %>
           </tbody>
         </table>

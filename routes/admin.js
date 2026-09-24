@@ -13,4 +13,5 @@ router.get('/listings', ctrl.getAllListings);
 router.post('/listings/:id/delete', ctrl.deleteListing);
 router.get('/orders', ctrl.getAllOrders);
 router.get('/users', ctrl.getAllUsers);
+router.post('/users/:id/toggle', ctrl.toggleUserStatus);
 module.exports = router;

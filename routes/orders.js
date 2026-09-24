@@ -6,4 +6,5 @@ router.post('/place', isLoggedIn, ctrl.placeOrder);
 router.get('/', isLoggedIn, ctrl.getMyOrders);
 router.get('/:id', isLoggedIn, ctrl.getOrderDetail);
 router.post('/:id/cancel', isLoggedIn, ctrl.cancelOrder);
+router.post('/:id/received', isLoggedIn, ctrl.confirmDelivery);
 module.exports = router;

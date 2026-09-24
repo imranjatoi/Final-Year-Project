@@ -44,10 +44,6 @@
               <form action="/seller/orders/<%= o._id %>/status" method="POST">
                 <input type="hidden" name="status" value="dispatched"/><button type="submit" class="btn btn-primary btn-sm" style="border-radius:20px;background:var(--green-main);border:none">🚚 Dispatch</button>
               </form>
-              <% } else if(o.status === 'dispatched'){ %>
-              <form action="/seller/orders/<%= o._id %>/status" method="POST">
-                <input type="hidden" name="status" value="delivered"/><button type="submit" class="btn btn-success btn-sm" style="border-radius:20px">✓ Mark Delivered</button>
-              </form>
               <% } %>
             </div>
           </div>

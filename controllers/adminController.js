@@ -68,11 +68,18 @@ exports.rejectSeller = async (req, res) => {
 exports.toggleUserStatus = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
+    if (!user) {
+      req.flash('error', 'User not found.');
+      return res.redirect('/admin/dashboard');
+    }
     user.isActive = !user.isActive;
     await user.save();
-    req.flash('success', `User ${user.isActive ? 'activated' : 'suspended'}.`);
-    res.redirect('/admin/sellers');
-  } catch (err) { req.flash('error','Action failed.'); res.redirect('/admin/sellers'); }
+    req.flash('success', `${user.name} has been ${user.isActive ? 'activated' : 'suspended'}.`);
+    res.redirect(user.role === 'buyer' ? '/admin/users' : '/admin/sellers');
+  } catch (err) {
+    req.flash('error', 'Action failed.');
+    res.redirect('/admin/dashboard');
+  }
 };
 
 exports.getAllListings = async (req, res) => {

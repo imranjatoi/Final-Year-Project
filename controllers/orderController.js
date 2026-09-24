@@ -92,3 +92,26 @@ exports.cancelOrder = async (req, res) => {
     res.redirect('/orders');
   } catch (err) { req.flash('error','Cancellation failed.'); res.redirect('/orders'); }
 };
+
+exports.confirmDelivery = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order || order.buyer.toString() !== req.session.user._id.toString()) {
+      req.flash('error', 'Access denied.');
+      return res.redirect('/orders');
+    }
+    if (order.status !== 'dispatched') {
+      req.flash('error', 'Order is not dispatched yet.');
+      return res.redirect('/orders/' + order._id);
+    }
+    order.status = 'delivered';
+    order.statusHistory.push({ status: 'delivered', note: 'Marked as received by buyer.' });
+    await order.save();
+    req.flash('success', 'Order marked as delivered! Please leave a review for the seller.');
+    res.redirect('/orders/' + order._id);
+  } catch (err) {
+    console.error('confirmDelivery error:', err);
+    req.flash('error', 'Failed to update order.');
+    res.redirect('/orders');
+  }
+};

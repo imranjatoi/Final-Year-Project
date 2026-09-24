@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const { validationResult } = require('express-validator');
+const crypto = require('crypto');
+const emailConfig = require('../config/email');
 
 exports.getRegister = (req, res) => {
   res.render('auth/register', { title: 'Register – Baghban', role: req.query.role || 'buyer' });
@@ -130,4 +132,101 @@ exports.postUpdateProfile = async (req, res) => {
     req.flash('success', 'Profile updated successfully.');
     res.redirect('/auth/profile');
   } catch (err) { req.flash('error', 'Update failed.'); res.redirect('/auth/profile'); }
+};
+
+// ── Forgot Password ──
+exports.getForgotPassword = (req, res) => {
+  res.render('auth/forgotPassword', { title: 'Forgot Password – Baghban', resetLink: null });
+};
+
+exports.postForgotPassword = async (req, res) => {
+  try {
+    const cleanEmail = (req.body.email || '').trim().toLowerCase();
+    const user = await User.findOne({ email: cleanEmail });
+
+    if (!user) {
+      req.flash('error', 'No account found with this email address.');
+      return res.redirect('/auth/forgot-password');
+    }
+
+    // Generate secure 32-byte token with 1 hour expiration
+    const token = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
+
+    const resetPath = `/auth/reset-password/${token}`;
+    const fullResetUrl = `${req.protocol}://${req.get('host')}${resetPath}`;
+    await emailConfig.sendPasswordResetEmail(user.email, user.name, fullResetUrl);
+
+    // Direct render on screen for instant one-click access
+    res.render('auth/forgotPassword', {
+      title: 'Reset Link Ready – Baghban',
+      resetLink: resetPath,
+      userEmail: user.email
+    });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    req.flash('error', 'Unable to process password reset request.');
+    res.redirect('/auth/forgot-password');
+  }
+};
+
+// ── Reset Password ──
+exports.getResetPassword = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      req.flash('error', 'Password reset link is invalid or has expired.');
+      return res.redirect('/auth/forgot-password');
+    }
+
+    res.render('auth/resetPassword', { title: 'Reset Password – Baghban', token: req.params.token });
+  } catch (err) {
+    req.flash('error', 'Invalid or expired reset token.');
+    res.redirect('/auth/forgot-password');
+  }
+};
+
+exports.postResetPassword = async (req, res) => {
+  try {
+    const { password, confirmPassword } = req.body;
+
+    if (!password || password.length < 8) {
+      req.flash('error', 'Password must be at least 8 characters long.');
+      return res.redirect(`/auth/reset-password/${req.params.token}`);
+    }
+
+    if (password !== confirmPassword) {
+      req.flash('error', 'Passwords do not match.');
+      return res.redirect(`/auth/reset-password/${req.params.token}`);
+    }
+
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      req.flash('error', 'Password reset link is invalid or has expired.');
+      return res.redirect('/auth/forgot-password');
+    }
+
+    // Set new password (pre('save') hook will hash it) and clear reset token
+    user.passwordHash = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    req.flash('success', 'Your password has been successfully reset! Please login with your new password.');
+    res.redirect('/auth/login');
+  } catch (err) {
+    console.error('Reset password error:', err);
+    req.flash('error', 'Failed to reset password. Please try again.');
+    res.redirect('/auth/forgot-password');
+  }
 };
