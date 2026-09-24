@@ -10,16 +10,18 @@ const morgan = require('morgan');
 const path = require('path');
 const cron = require('node-cron');
 
+const MongoStore = require('connect-mongo');
+
 const app = express();
+app.set('trust proxy', 1);
 
 // ── Database connection ───────────────────────────────────────
-if (process.env.MONGO_URI) {
-  mongoose.connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 5000,
-  })
-    .then(() => console.log('✅ MongoDB connected'))
-    .catch(err => console.error('❌ MongoDB error:', err.message));
-}
+const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/baghban';
+mongoose.connect(mongoUri, {
+  serverSelectionTimeoutMS: 5000,
+})
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch(err => console.error('❌ MongoDB error:', err.message));
 
 // ── View engine ───────────────────────────────────────────────
 app.set('view engine', 'ejs');
@@ -35,10 +37,15 @@ app.use(mongoSanitize()); // Prevent NoSQL injection
 app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false })); // Security headers
 
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'baghban_secret_key_12345',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 24 }
+  store: MongoStore.create({
+    mongoUrl: mongoUri,
+    ttl: 14 * 24 * 60 * 60,
+    autoRemove: 'native'
+  }),
+  cookie: { maxAge: 1000 * 60 * 60 * 24 * 7, httpOnly: true }
 }));
 app.use(flash());
 
