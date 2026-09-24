@@ -10,7 +10,8 @@ const morgan = require('morgan');
 const path = require('path');
 const cron = require('node-cron');
 
-const MongoStore = require('connect-mongo');
+const connectMongo = require('connect-mongo');
+const MongoStore = connectMongo.default || connectMongo;
 
 const app = express();
 app.set('trust proxy', 1);
@@ -42,8 +43,7 @@ app.use(session({
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: mongoUri,
-    ttl: 14 * 24 * 60 * 60,
-    autoRemove: 'native'
+    ttl: 14 * 24 * 60 * 60
   }),
   cookie: { maxAge: 1000 * 60 * 60 * 24 * 7, httpOnly: true }
 }));
@@ -78,18 +78,20 @@ app.use((err, req, res, next) => {
   res.status(500).render('error', { title: 'Error', message: err.message });
 });
 
-// ── Cron: daily plant care reminders ─────────────────────────
-const reminderJob = require('./controllers/careController').sendDailyReminders;
-cron.schedule('0 8 * * *', () => {
-  console.log('🌿 Running daily plant care reminders...');
-  reminderJob();
-});
+// ── Cron & Server (Local / Standalone) ────────────────────────
+if (!process.env.VERCEL) {
+  const reminderJob = require('./controllers/careController').sendDailyReminders;
+  cron.schedule('0 8 * * *', () => {
+    console.log('🌿 Running daily plant care reminders...');
+    reminderJob();
+  });
 
-// ── Start server ──────────────────────────────────────────────
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🌱 Baghban server running at http://localhost:${PORT}`);
-});
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`🌱 Baghban server running at http://localhost:${PORT}`);
+  });
+}
 
 module.exports = app;
+
 
