@@ -11,7 +11,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/baghban')
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch(err => { console.error(err); process.exit(1); });
 
-const hash = async (pw) => bcrypt.hash(pw, 12);
+const hash = async (pw) => pw;
 
 async function seed() {
   try {
