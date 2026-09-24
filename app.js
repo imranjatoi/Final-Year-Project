@@ -13,11 +13,13 @@ const cron = require('node-cron');
 const app = express();
 
 // ── Database connection ───────────────────────────────────────
-mongoose.connect(process.env.MONGO_URI, {
-  serverSelectionTimeoutMS: 5000,
-})
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch(err => { console.error('❌ MongoDB error:', err); process.exit(1); });
+if (process.env.MONGO_URI) {
+  mongoose.connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 5000,
+  })
+    .then(() => console.log('✅ MongoDB connected'))
+    .catch(err => console.error('❌ MongoDB error:', err.message));
+}
 
 // ── View engine ───────────────────────────────────────────────
 app.set('view engine', 'ejs');
@@ -81,3 +83,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🌱 Baghban server running at http://localhost:${PORT}`);
 });
+
+module.exports = app;
+
